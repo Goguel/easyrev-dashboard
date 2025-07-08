@@ -17,7 +17,7 @@ return new class extends Migration
         $table->date('check_in_date'); // Data de entrada 
         $table->date('check_out_date'); // Data de saída 
         $table->integer('guest_count'); // Quantidade de hóspedes 
-        $table->string('status')->default('pendente'); // Status, com 'pendente' como padrão 
+        $table->enum('status', ['pendente', 'confirmada', 'cancelada'])->default('pendente'); // Status, com 'pendente' como padrão 
         $table->timestamps();
     });
     }

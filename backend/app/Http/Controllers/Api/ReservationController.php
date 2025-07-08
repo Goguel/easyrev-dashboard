@@ -13,12 +13,11 @@ class ReservationController extends Controller
     /**
      * Retorna todas as reservas para a data atual.
      */
-    public function today()
+    public function today(Request $request)
     {
-        // Utiliza o Carbon (biblioteca de datas do Laravel) para pegar a data de hoje
-        // e busca no banco onde o check-in é hoje.
-        $today_reservations = Reservation::whereDate('check_in_date', Carbon::today())->get();
-
+        // Use a data da request, ou a data de hoje se nenhuma for enviada
+        $date = $request->input('date', Carbon::today());
+        $today_reservations = Reservation::whereDate('check_in_date', $date)->get();
         return response()->json($today_reservations);
     }
 
