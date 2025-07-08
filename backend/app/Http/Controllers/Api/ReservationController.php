@@ -13,7 +13,7 @@ class ReservationController extends Controller
     /**
      * Retorna todas as reservas para a data atual.
      */
-    public function today(Request $request)
+    public function index(Request $request)
     {
         // Use a data da request, ou a data de hoje se nenhuma for enviada
         $date = $request->input('date', Carbon::today());
