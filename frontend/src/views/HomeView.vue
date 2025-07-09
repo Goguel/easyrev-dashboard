@@ -2,31 +2,24 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-// --- FUNÇÃO AUXILIAR PARA PEGAR A DATA LOCAL CORRETA ---
 function getLocalDate() {
   const date = new Date();
-  // Ajusta para o fuso horário local antes de pegar os componentes
+  // Ajusta para o fuso horário local para evitar o bug do dia seguinte
   date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
   // Retorna a data no formato YYYY-MM-DD
   return date.toISOString().split('T')[0];
 }
 
-// A URL do backend. Ajuste a porta se você usou uma diferente (ex: 8000).
+// URL do backend.
 const API_URL = 'http://localhost:8000/api'; 
 
 // --- Variáveis de Estado ---
 const reservations = ref([]);
-const isLoading = ref(true);         // Controla o loading inicial da tabela
-const errorMessage = ref('');      // Guarda mensagens de erro para o usuário
-
-// Variáveis para controlar o estado de "carregando" das ações
-const isCreating = ref(false); // Para o formulário de criação
-const updatingId = ref(null);  // Guarda o ID da reserva que está sendo atualizada
-
-// Estado do formulário
+const isLoading = ref(true);
+const errorMessage = ref('');
 const newReservation = ref({
   guest_name: '',
-  check_in_date: getLocalDate(), // Usa a nova função para a data correta
+  check_in_date: getLocalDate(), 
   check_out_date: '',
   guest_count: 1
 });
@@ -38,13 +31,9 @@ async function fetchReservations() {
   isLoading.value = true;
   errorMessage.value = '';
   try {
-    const today_local = getLocalDate();
-
-    // Envia a data local correta como um parâmetro para o backend
-    const response = await axios.get(`${API_URL}/reservations/today`, {
-      params: { date: today_local }
+    const response = await axios.get(`${API_URL}/reservations`, {
+      params: { date: getLocalDate() } // Usa a data local correta
     });
-
     reservations.value = response.data;
   } catch (error) {
     errorMessage.value = 'Falha ao carregar as reservas.';
@@ -55,7 +44,6 @@ async function fetchReservations() {
 }
 
 async function createReservation() {
-  isCreating.value = true;
   errorMessage.value = '';
   try {
     if (!newReservation.value.guest_name || !newReservation.value.check_in_date || !newReservation.value.check_out_date) {
@@ -69,13 +57,10 @@ async function createReservation() {
   } catch (error) {
     errorMessage.value = 'Erro ao criar a reserva. Verifique os dados.';
     console.error("Erro detalhado ao criar:", error);
-  } finally {
-    isCreating.value = false;
   }
 }
 
 async function updateStatus(reservation, newStatus) {
-  updatingId.value = reservation.id;
   try {
     const response = await axios.patch(`${API_URL}/reservations/${reservation.id}`, { status: newStatus });
     const index = reservations.value.findIndex(r => r.id === reservation.id);
@@ -85,8 +70,6 @@ async function updateStatus(reservation, newStatus) {
   } catch (error) {
     errorMessage.value = `Erro ao atualizar a reserva #${reservation.id}.`;
     console.error("Erro detalhado ao atualizar:", error);
-  } finally {
-    updatingId.value = null;
   }
 }
 
@@ -128,9 +111,7 @@ function getStatusClass(status) {
             <label for="check_out">Data de Check-out</label>
             <input id="check_out" type="date" v-model="newReservation.check_out_date" required>
           </div>
-          <button type="submit" class="btn btn-primary" :disabled="isCreating">
-            {{ isCreating ? 'Salvando...' : 'Adicionar Reserva' }}
-          </button>
+          <button type="submit" class="btn btn-primary">Adicionar Reserva</button>
         </form>
       </div>
 
@@ -161,12 +142,9 @@ function getStatusClass(status) {
                   </span>
                 </td>
                 <td class="actions">
-                  <div v-if="updatingId === res.id" class="spinner"></div>
-                  <div v-else>
-                    <button v-if="res.status === 'pendente'" @click="updateStatus(res, 'confirmada')" class="btn-action btn-confirm" :disabled="updatingId">Confirmar</button>
-                    <button v-if="res.status === 'confirmada'" @click="updateStatus(res, 'pendente')" class="btn-action btn-pending">Reverter</button>
-                    <button v-if="res.status !== 'cancelada'" @click="updateStatus(res, 'cancelada')" class="btn-action btn-cancel" :disabled="updatingId">Cancelar</button>
-                  </div>
+                  <button v-if="res.status === 'pendente'" @click="updateStatus(res, 'confirmada')" class="btn-action btn-confirm">Confirmar</button>
+                  <button v-if="res.status === 'confirmada'" @click="updateStatus(res, 'pendente')" class="btn-action btn-pending">Reverter</button>
+                  <button v-if="res.status !== 'cancelada'" @click="updateStatus(res, 'cancelada')" class="btn-action btn-cancel">Cancelar</button>
                 </td>
               </tr>
             </tbody>
@@ -222,7 +200,7 @@ header h1 {
   background-color: var(--card-bg-color);
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-  padding: 2.5rem;
+  padding: 2.5rem 3rem; 
 }
 .card h2 {
   font-size: 1.8rem;
@@ -260,23 +238,10 @@ header h1 {
   background-color: var(--primary-color);
   color: white;
   margin-top: 1rem;
-  transition: background-color 0.2s;
-}
-.btn-primary:disabled {
-  background-color: #a5b4fc;
-  cursor: not-allowed;
-}
-.btn-primary:hover:not(:disabled) {
-  background-color: #3730a3;
 }
 .table-container {
-  /* Define uma altura máxima para a área da tabela. Ajuste o valor como quiser. */
-  max-height: 60vh; /* 60% da altura da tela */
-  
-  /* Adiciona a barra de rolagem VERTICAL quando o conteúdo ultrapassar a altura máxima. */
+  max-height: 60vh;
   overflow-y: auto;
-  
-  /* Mantém a rolagem horizontal para o caso de a tela ser muito estreita. */
   overflow-x: auto;
 }
 table {
@@ -285,10 +250,10 @@ table {
 }
 th, td {
   padding: 1.25rem;
-  text-align: center;
+  text-align: left;
   border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
-  white-space: nowrap;
+  white-space: nowrap; 
 }
 th {
   font-size: 0.9rem;
@@ -302,7 +267,6 @@ td {
 .actions {
   text-align: center;
   white-space: nowrap;
-  min-width: 220px; /* Garante espaço para os botões */
 }
 .actions .btn-action {
   padding: 0.6rem 1.2rem;
@@ -315,10 +279,7 @@ td {
   margin: 0 4px;
   transition: opacity 0.2s;
 }
-.actions .btn-action:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+.actions .btn-action:hover { opacity: 0.85; }
 .btn-confirm { background-color: var(--green); }
 .btn-cancel { background-color: var(--red); }
 .btn-pending { background-color: var(--yellow); }
@@ -346,19 +307,5 @@ td {
   color: var(--red);
   background-color: #fee2e2;
   font-weight: bold;
-}
-.spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border-left-color: var(--primary-color);
-  animation: spin 1s ease infinite;
-  margin: auto;
-  display: block;
-}
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 </style>
