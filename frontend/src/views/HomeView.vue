@@ -12,7 +12,7 @@ function getLocalDate() {
 }
 
 // A URL do backend. Ajuste a porta se você usou uma diferente (ex: 8000).
-const API_URL = 'http://localhost/api'; 
+const API_URL = 'http://localhost:8000/api'; 
 
 // --- Variáveis de Estado ---
 const reservations = ref([]);
@@ -38,7 +38,13 @@ async function fetchReservations() {
   isLoading.value = true;
   errorMessage.value = '';
   try {
-    const response = await axios.get(`${API_URL}/reservations/today`);
+    const today_local = getLocalDate();
+
+    // Envia a data local correta como um parâmetro para o backend
+    const response = await axios.get(`${API_URL}/reservations/today`, {
+      params: { date: today_local }
+    });
+
     reservations.value = response.data;
   } catch (error) {
     errorMessage.value = 'Falha ao carregar as reservas.';
