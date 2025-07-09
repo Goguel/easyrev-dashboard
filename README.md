@@ -45,6 +45,8 @@ Siga os passos abaixo para configurar e rodar o ambiente de desenvolvimento em q
 * Composer
 
 ---
+
+## Siga exatamente os comandos na ordem a abaixo:
 ### **1. Clonando o repositório (Github)**
 ```bash
 # 1. Clone o repositório para o seu computador
@@ -83,10 +85,8 @@ docker-compose exec backend php artisan migrate
 # 7. Gerar a Chave da Aplicação (Garantia):
 # O `.env` foi copiado, mas é uma boa prática garantir que a chave da aplicação está gerada para esta instância.
 docker-compose exec backend php artisan key:generate
-
-# 8. Popular o Banco de Dados:
-docker-compose exec backend php artisan db:seed
 ```
+Para acessar o backend, acesse `http://localhost:8000`
 
 ### **2. Configuração do Frontend (Vue.js)**
 ```bash
@@ -102,7 +102,8 @@ npm install
 npm run dev
 ```
 
-Acesse a aplicação no seu navegador no endereço fornecido pelo `npm run dev` (geralmente **`http://localhost:5173`**).
+Acesse a aplicação no seu navegador no endereço fornecido pelo `npm run dev` (geralmente **`http://localhost:5173`**).<br />
+
 
 ## Endpoints da API
 
