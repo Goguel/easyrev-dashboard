@@ -24,6 +24,7 @@ A aplicação é dividida em duas partes principais: um **backend** construído 
 Este projeto foi construído utilizando as seguintes tecnologias:
 
 * **Backend:**
+    * PHP
     * Laravel 
     * MySQL 
     * Docker & Laravel Sail
@@ -100,3 +101,30 @@ npm install
 # Põe o frontend em execução e pronto para ser acessado
 npm run dev
 ```
+
+Acesse a aplicação no seu navegador no endereço fornecido pelo `npm run dev` (geralmente **`http://localhost:5173`**).
+
+## Endpoints da API
+
+A API do backend expõe as seguintes rotas. O endereço base é `http://localhost/api` (ou `http://localhost:8000/api` se você mudou a porta).
+
+| Método | URI | Ação | Corpo (JSON) |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/reservations/today` | Retorna uma lista de todas as reservas com check-in hoje. | - |
+| `POST`| `/reservations` | Cria uma nova reserva. | `{ "guest_name": "string", "check_in_date": "YYYY-MM-DD", "check_out_date": "YYYY-MM-DD", "guest_count": "integer" }` |
+|`PATCH`| `/reservations/{id}`| Atualiza o status de uma reserva existente. | `{ "status": "confirmada" }` (pendente, confirmada, cancelada) |
+
+## Estrutura do Banco de Dados
+
+A aplicação utiliza uma única tabela principal: `reservations`.
+
+| Coluna | Tipo | Descrição |
+| :--- | :--- | :--- |
+| `id` | BIGINT (Unsigned) | Identificador único da reserva (Chave Primária).  |
+| `guest_name` | VARCHAR(255) | Nome do hóspede principal. |
+| `check_in_date` | DATE | Data de entrada da reserva.  |
+| `check_out_date`| DATE | Data de saída da reserva. |
+| `guest_count` | INTEGER | Número de hóspedes na reserva. |
+| `status` | VARCHAR(255) | Status atual da reserva ('pendente', 'confirmada', 'cancelada').  |
+|`created_at`| TIMESTAMP | Data e hora de criação do registro. |
+|`updated_at`| TIMESTAMP | Data e hora da última atualização do registro. 
